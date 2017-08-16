@@ -171,4 +171,14 @@ class AnnotationBehaviorTest extends TestCase
 
         $this->listener->onKernelController($this->mockEvent);
     }
+
+    public function testItSetsMasterIfNoParentButOverriddenAnyway()
+    {
+        $this->expectsEvent();
+        $this->expectsMaster();
+
+        $this->setMethodExpectation(false, true);
+
+        $this->listener->onKernelController($this->mockEvent);
+    }
 }
