@@ -1,0 +1,11 @@
+services:
+    cj_codes_slave_route_limiter.controller.listener:
+        class: CJCodes\SlaveRouteLimiterBundle\EventListener\ControllerListener
+        arguments: ["@cj_codes_slave_route_limiter.util.config", "@database_connection"]
+        tags:
+            - { name: kernel.event_subscriber }
+
+    cj_codes_slave_route_limiter.util.config:
+        class: CJCodes\SlaveRouteLimiterBundle\Util\Configurations
+        arguments: ["@annotation_reader"]
+        shared: false
