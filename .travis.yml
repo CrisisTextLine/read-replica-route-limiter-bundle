@@ -12,4 +12,4 @@ cache:
 install: composer update --prefer-dist --no-interaction $COMPOSER_FLAGS
 
 script:
-    - ./vendor/bin/phpunit --test-dox
+    - ./vendor/bin/phpunit --testdox
