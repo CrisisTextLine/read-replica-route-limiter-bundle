@@ -1,15 +1,15 @@
 <?php
 
-use Doctrine\DBAL\Connection;
-use PHPUnit\Framework\TestCase;
-use helpers\StdClassWithCallable;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Annotation\ShouldNotUseReplica;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Annotation\ShouldUseReplica;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\EventListener\ControllerListener;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Util\Configurations;
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
-use CJCodes\SlaveRouteLimiterBundle\Util\Configurations;
+use helpers\StdClassWithCallable;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
-use CJCodes\SlaveRouteLimiterBundle\Annotation\ShouldUseSlave;
-use CJCodes\SlaveRouteLimiterBundle\Annotation\ShouldNotUseSlave;
-use CJCodes\SlaveRouteLimiterBundle\EventListener\ControllerListener;
 
 class AnnotationBehaviorTest extends TestCase
 {
@@ -38,7 +38,7 @@ class AnnotationBehaviorTest extends TestCase
      */
     protected $listener;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->mockReader = $this->getMockBuilder(Reader::class)
             ->disableOriginalConstructor()
@@ -70,14 +70,14 @@ class AnnotationBehaviorTest extends TestCase
             ->method('getController');
     }
 
-    protected function expectsMaster()
+    protected function expectsPrimary()
     {
         $this->mockConnection->expects($this->once())
             ->method('connect')
             ->with('master');
     }
 
-    protected function expectsSlave()
+    protected function expectsReplica()
     {
         $this->mockConnection->expects($this->once())
             ->method('connect')
@@ -86,7 +86,7 @@ class AnnotationBehaviorTest extends TestCase
 
     protected function setClassExpectation()
     {
-        $classAnnotation = new ShouldUseSlave;
+        $classAnnotation = new ShouldUseReplica;
 
         $this->mockReader->expects($this->once())
             ->method('getClassAnnotation')
@@ -95,29 +95,29 @@ class AnnotationBehaviorTest extends TestCase
         return $classAnnotation;
     }
 
-    protected function setMethodExpectation($shouldUseSlave = false, $shouldNotUseSlave = false)
+    protected function setMethodExpectation($shouldUseReplica = false, $shouldNotUseReplica = false)
     {
         $this->mockReader->expects($this->exactly(2))
             ->method('getMethodAnnotation')
-            ->will($this->returnCallback(function ($function, $class) use ($shouldUseSlave, $shouldNotUseSlave) {
+            ->will($this->returnCallback(function ($function, $class) use ($shouldUseReplica, $shouldNotUseReplica) {
                 switch ($class) {
-                    case ShouldUseSlave::class:
-                        return $shouldUseSlave ? new ShouldUseSlave : null;
-                    case ShouldNotUseSlave::class:
-                        return $shouldNotUseSlave ? new ShouldNotUseSlave : null;
+                    case ShouldUseReplica::class:
+                        return $shouldUseReplica ? new ShouldUseReplica : null;
+                    case ShouldNotUseReplica::class:
+                        return $shouldNotUseReplica ? new ShouldNotUseReplica : null;
                 }
             }));
     }
 
-    public function testItSetsMasterByDefault()
+    public function testItSetsPrimaryByDefault()
     {
         $this->expectsEvent();
-        $this->expectsMaster();
+        $this->expectsPrimary();
 
         $this->listener->onKernelController($this->mockEvent);
     }
 
-    public function testItSetsMasterIfNotMasterSlaveSetup()
+    public function testItSetsPrimaryIfNotMasterSlaveSetup()
     {
         $this->doesntExpectEvent();
 
@@ -130,30 +130,30 @@ class AnnotationBehaviorTest extends TestCase
         $listener->onKernelController($this->mockEvent);
     }
 
-    public function testItSetsSlaveForClass()
+    public function testItSetsReplicaForClass()
     {
         $this->expectsEvent();
-        $this->expectsSlave();
+        $this->expectsReplica();
 
         $this->setClassExpectation();
 
         $this->listener->onKernelController($this->mockEvent);
     }
 
-    public function testItSetsSlaveForMethodOnly()
+    public function testItSetsReplicaForMethodOnly()
     {
         $this->expectsEvent();
-        $this->expectsSlave();
+        $this->expectsReplica();
 
         $this->setMethodExpectation(true, false);
 
         $this->listener->onKernelController($this->mockEvent);
     }
 
-    public function testItSetsSlaveForClassAndMethod()
+    public function testItSetsReplicaForClassAndMethod()
     {
         $this->expectsEvent();
-        $this->expectsSlave();
+        $this->expectsReplica();
 
         $this->setClassExpectation();
         $this->setMethodExpectation(true, false);
@@ -161,10 +161,10 @@ class AnnotationBehaviorTest extends TestCase
         $this->listener->onKernelController($this->mockEvent);
     }
 
-    public function testItSetsMasterIfOverridden()
+    public function testItSetsPrimaryIfOverridden()
     {
         $this->expectsEvent();
-        $this->expectsMaster();
+        $this->expectsPrimary();
 
         $this->setClassExpectation();
         $this->setMethodExpectation(false, true);
@@ -172,10 +172,10 @@ class AnnotationBehaviorTest extends TestCase
         $this->listener->onKernelController($this->mockEvent);
     }
 
-    public function testItSetsMasterIfNoParentButOverriddenAnyway()
+    public function testItSetsPrimaryIfNoParentButOverriddenAnyway()
     {
         $this->expectsEvent();
-        $this->expectsMaster();
+        $this->expectsPrimary();
 
         $this->setMethodExpectation(false, true);
 

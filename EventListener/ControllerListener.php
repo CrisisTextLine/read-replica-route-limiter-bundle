@@ -1,13 +1,13 @@
 <?php
 
-namespace CJCodes\SlaveRouteLimiterBundle\EventListener;
+namespace CrisisTextLine\ReadReplicaRouteLimiterBundle\EventListener;
 
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Util\Configurations;
 use Doctrine\DBAL\Connection;
-use Symfony\Component\HttpKernel\KernelEvents;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
-use CJCodes\SlaveRouteLimiterBundle\Util\Configurations;
-use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 
 class ControllerListener implements EventSubscriberInterface
 {
@@ -38,7 +38,7 @@ class ControllerListener implements EventSubscriberInterface
      */
     public function onKernelController(FilterControllerEvent $event)
     {
-        // If we don't have a MasterSlaveConnection, we're safe.
+        // If we don't have a MasterSlaveConnection, there's no need to intercept the request
         if (!($this->connection instanceof MasterSlaveConnection)) {
             return;
         }
@@ -47,27 +47,27 @@ class ControllerListener implements EventSubscriberInterface
 
         // If we don't have a controller route
         if (!is_array($controllerCallable)) {
-            $this->setMaster();
+            $this->setPrimary();
         } else {
             $this->configurations->parse($controllerCallable);
 
-            if ($this->configurations->shouldUseSlave()) {
-                $this->setSlave();
+            if ($this->configurations->shouldUseReplica()) {
+                $this->setReplica();
             } else {
-                $this->setMaster();
+                $this->setPrimary();
             }
         }
     }
 
-    protected function setMaster()
+    protected function setPrimary()
     {
         $this->connection->connect('master');
     }
 
-    protected function setSlave()
+    protected function setReplica()
     {
         // Nothing needs to happen here, because the MasterSlaveConnection
-        // will automatically pick a random slave. For the sake of clarity,
+        // will automatically pick a random replica. For the sake of clarity,
         // we're going to call $connection->connect('slave') anyway.
         $this->connection->connect('slave');
     }

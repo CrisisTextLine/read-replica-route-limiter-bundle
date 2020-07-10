@@ -1,12 +1,12 @@
 <?php
 
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\EventListener\ControllerListener;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Util\Configurations;
 use Doctrine\DBAL\Connection;
-use PHPUnit\Framework\TestCase;
-use helpers\StdClassWithCallable;
 use Doctrine\DBAL\Connections\MasterSlaveConnection;
-use CJCodes\SlaveRouteLimiterBundle\Util\Configurations;
+use helpers\StdClassWithCallable;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
-use CJCodes\SlaveRouteLimiterBundle\EventListener\ControllerListener;
 
 class ControllerListenerTest extends TestCase
 {
@@ -20,7 +20,7 @@ class ControllerListenerTest extends TestCase
      */
     protected $mockConnection;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->mockConfigurations = $this->getMockBuilder(Configurations::class)
             ->disableOriginalConstructor()
@@ -51,7 +51,7 @@ class ControllerListenerTest extends TestCase
             ->method('getController');
     }
 
-    public function testItSetsMasterByDefault()
+    public function testItSetsPrimaryByDefault()
     {
         $this->expectsEvent();
 
@@ -75,12 +75,12 @@ class ControllerListenerTest extends TestCase
         $tempSUT->onKernelController($this->mockEvent);
     }
 
-    public function testItSetsSlave()
+    public function testItSetsReplica()
     {
         $this->expectsEvent();
 
         $this->mockConfigurations->expects($this->once())
-            ->method('shouldUseSlave')
+            ->method('shouldUseReplica')
             ->willReturn(true);
 
         $this->mockConnection->expects($this->once())
@@ -95,7 +95,7 @@ class ControllerListenerTest extends TestCase
         $this->expectsEvent();
 
         $this->mockConfigurations->expects($this->once())
-            ->method('shouldUseSlave')
+            ->method('shouldUseReplica')
             ->willReturn(false);
 
         $this->mockConnection->expects($this->once())

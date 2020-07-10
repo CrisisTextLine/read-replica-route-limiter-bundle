@@ -1,24 +1,30 @@
 {
-    "name": "cjcodes/slave-route-limiter-bundle",
-    "description": "Instead of globally applying a master-slave, this bundle, when enabled, requires devs to flag routes as @ShouldUseSlave to use the slave database, otherwise it defaults to master.",
+    "name": "crisistextline/read-replica-route-limiter-bundle",
+    "description": "Instead of globally applying a Doctrine-managed MasterSlave connection, this bundle, when enabled, requires devs to flag routes as @ShouldUseReplica to use the replica database, otherwise it defaults to the primary database.",
     "type": "symfony-bundle",
     "require": {
-        "symfony/framework-bundle": ">=2.3",
+        "symfony/framework-bundle": ">=2.3 < 5.0.0",
         "doctrine/orm": ">=2.3"
     },
     "require-dev": {
-        "phpunit/phpunit": ">=5.6"
+        "phpunit/phpunit": ">=8.0.0"
     },
     "license": "MIT",
     "authors": [
         {
             "name": "Chris Johnson",
-            "email": "chris@cjcodes.com"
+            "email": "chris@cjcodes.com",
+            "role": "Creator"
+        },
+        {
+            "name": "Shayne Martin",
+            "email": "shayne@crisistextline.org",
+            "role": "Maintainer"
         }
     ],
     "autoload": {
         "psr-4": {
-            "CJCodes\\SlaveRouteLimiterBundle\\": ""
+            "CrisisTextLine\\ReadReplicaRouteLimiterBundle\\": ""
         },
         "exclude-from-classmap": [
             "/Tests/"
@@ -28,5 +34,8 @@
         "psr-4": {
             "helpers\\": "Tests/helpers"
         }
+    },
+    "scripts": {
+        "test": "./vendor/bin/phpunit"
     }
 }

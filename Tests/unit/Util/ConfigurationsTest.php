@@ -1,11 +1,11 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-use helpers\StdClassWithCallable;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Annotation\ShouldNotUseReplica;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Annotation\ShouldUseReplica;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Util\Configurations;
 use Doctrine\Common\Annotations\Reader;
-use CJCodes\SlaveRouteLimiterBundle\Util\Configurations;
-use CJCodes\SlaveRouteLimiterBundle\Annotation\ShouldUseSlave;
-use CJCodes\SlaveRouteLimiterBundle\Annotation\ShouldNotUseSlave;
+use helpers\StdClassWithCallable;
+use PHPUnit\Framework\TestCase;
 
 class ConfigurationsTest extends TestCase
 {
@@ -14,7 +14,7 @@ class ConfigurationsTest extends TestCase
      */
     protected $SUT;
 
-    public function setUp()
+    public function setUp(): void
     {
         $mockReader = $this->getMockBuilder(Reader::class)
             ->disableOriginalConstructor()
@@ -32,7 +32,7 @@ class ConfigurationsTest extends TestCase
 
     protected function setClassExpectation()
     {
-        $classAnnotation = new ShouldUseSlave;
+        $classAnnotation = new ShouldUseReplica;
 
         $this->mockReader->expects($this->once())
             ->method('getClassAnnotation')
@@ -41,16 +41,16 @@ class ConfigurationsTest extends TestCase
         return $classAnnotation;
     }
 
-    protected function setMethodExpectation($shouldUseSlave = null, $shouldNotUseSlave = null)
+    protected function setMethodExpectation($shouldUseReplica = null, $shouldNotUseReplica = null)
     {
         $this->mockReader->expects($this->exactly(2))
             ->method('getMethodAnnotation')
-            ->will($this->returnCallback(function ($function, $class) use ($shouldUseSlave, $shouldNotUseSlave) {
+            ->will($this->returnCallback(function ($function, $class) use ($shouldUseReplica, $shouldNotUseReplica) {
                 switch ($class) {
-                    case ShouldUseSlave::class:
-                        return $shouldUseSlave;
-                    case ShouldNotUseSlave::class:
-                        return $shouldNotUseSlave;
+                    case ShouldUseReplica::class:
+                        return $shouldUseReplica;
+                    case ShouldNotUseReplica::class:
+                        return $shouldNotUseReplica;
                 }
             }));
     }
@@ -60,7 +60,7 @@ class ConfigurationsTest extends TestCase
         $classAnnotation = $this->setClassExpectation();
 
         $methodAnnotation = null;
-        $negationAnnotation = new ShouldNotUseSlave;
+        $negationAnnotation = new ShouldNotUseReplica;
 
         $this->setMethodExpectation($methodAnnotation, $negationAnnotation);
 
@@ -71,30 +71,30 @@ class ConfigurationsTest extends TestCase
         $this->assertEquals($negationAnnotation, $this->SUT->negation);
     }
 
-    public function testItShouldUseSlaveForClasses()
+    public function testItShouldUseReplicaForClasses()
     {
         $this->setClassExpectation();
 
         $this->SUT->parse($this->mockCallable);
 
-        $this->assertTrue($this->SUT->shouldUseSlave());
+        $this->assertTrue($this->SUT->shouldUseReplica());
     }
 
-    public function testItShouldNotUseSlaveForNullValues()
+    public function testItShouldNotUseReplicaForNullValues()
     {
         $this->SUT->parse($this->mockCallable);
 
-        $this->assertFalse($this->SUT->shouldUseSlave());
+        $this->assertFalse($this->SUT->shouldUseReplica());
     }
 
-    public function testItShouldNotUseSlaveForMethodThatHasOverride()
+    public function testItShouldNotUseReplicaForMethodThatHasOverride()
     {
         $this->setClassExpectation();
 
-        $this->setMethodExpectation(null, new ShouldNotUseSlave);
+        $this->setMethodExpectation(null, new ShouldNotUseReplica);
 
         $this->SUT->parse($this->mockCallable);
 
-        $this->assertFalse($this->SUT->shouldUseSlave());
+        $this->assertFalse($this->SUT->shouldUseReplica());
     }
 }

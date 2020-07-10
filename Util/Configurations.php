@@ -1,22 +1,22 @@
 <?php
 
-namespace CJCodes\SlaveRouteLimiterBundle\Util;
+namespace CrisisTextLine\ReadReplicaRouteLimiterBundle\Util;
 
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Annotation\ShouldNotUseReplica;
+use CrisisTextLine\ReadReplicaRouteLimiterBundle\Annotation\ShouldUseReplica;
 use Doctrine\Common\Annotations\Reader;
-use CJCodes\SlaveRouteLimiterBundle\Annotation\ShouldUseSlave;
-use CJCodes\SlaveRouteLimiterBundle\Annotation\ShouldNotUseSlave;
 
 class Configurations
 {
     /**
      * @var string
      */
-    const ANNOTATION_CLASS = ShouldUseSlave::class;
+    const ANNOTATION_CLASS = ShouldUseReplica::class;
 
     /**
      * @var string
      */
-    const NEGATION_CLASS = ShouldNotUseSlave::class;
+    const NEGATION_CLASS = ShouldNotUseReplica::class;
 
     /**
      * @var Reader
@@ -24,17 +24,17 @@ class Configurations
     protected $reader;
 
     /**
-     * @var ShouldUseSlave
+     * @var ShouldUseReplica
      */
     public $class;
 
     /**
-     * @var ShouldUseSlave
+     * @var ShouldUseReplica
      */
     public $method;
 
     /**
-     * @var ShouldNotUseSlave
+     * @var ShouldNotUseReplica
      */
     public $negation;
 
@@ -58,7 +58,7 @@ class Configurations
         $this->negation = $this->reader->getMethodAnnotation($method, self::NEGATION_CLASS);
     }
 
-    public function shouldUseSlave()
+    public function shouldUseReplica()
     {
         return !is_null($this->method) || (!is_null($this->class) && is_null($this->negation));
     }

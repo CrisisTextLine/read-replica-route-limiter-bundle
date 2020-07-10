@@ -1,6 +1,6 @@
 <?php
 
-namespace CJCodes\SlaveRouteLimiterBundle\DependencyInjection;
+namespace CrisisTextLine\ReadReplicaRouteLimiterBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -17,7 +17,7 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder('cj_codes_slave_route_limiter');
+        $treeBuilder = new TreeBuilder('crisis_text_line_read_replica_route_limiter');
         $rootNode = $treeBuilder->getRootNode();
 
         // Here you should define the parameters that are allowed to
