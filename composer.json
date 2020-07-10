@@ -1,5 +1,5 @@
 {
-    "name": "crisistextline/read-replica-route-limiter-bundle",
+    "name": "crisis-text-line/read-replica-route-limiter-bundle",
     "description": "Instead of globally applying a Doctrine-managed MasterSlave connection, this bundle, when enabled, requires devs to flag routes as @ShouldUseReplica to use the replica database, otherwise it defaults to the primary database.",
     "type": "symfony-bundle",
     "require": {
